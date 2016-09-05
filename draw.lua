@@ -1,4 +1,5 @@
 require 'cairo'
+require 'math'
 
 --config
 -------------------------------------------------------------------------------
@@ -14,6 +15,7 @@ base = {
     },
     ring = {},
     clock = {},
+    a_clock = {},
     monitor = {},
 }
 
@@ -24,6 +26,15 @@ base.ring = {
     font_size = 22 * base.scale,
     radius = 250 * base.scale,
     interval = 30 * base.scale,
+}
+
+base.a_clock = {
+    s_length = base.ring.radius * base.scale,
+    m_length = base.ring.radius * 0.8 * base.scale,
+    h_length = base.ring.radius * 0.5 * base.scale,
+    s_width = 1,
+    m_width = 2,
+    h_width = 3,
 }
 
 base.clock = {
@@ -73,6 +84,33 @@ function conky_main()
         conky_window.drawable, conky_window.visual, conky_window.height,
         conky_window.width)
     local cr = cairo_create(cs)
+
+    --Analog Clock
+    s = tonumber(conky_parse("${time %S}"))
+    m = tonumber(conky_parse("${time %M}"))
+    h = tonumber(conky_parse("${time %H}"))
+    cairo_set_line_width(cr,base.a_clock.s_width)
+    cairo_set_source_rgba(cr,0.265625,00.265625,0.578125,1)
+    cairo_move_to(cr, base.x + base.ring.x, base.y + base.ring.y)
+    cairo_rel_line_to(cr, base.a_clock.s_length * math.cos(s / 60 * 2 * math.pi - math.pi / 2),
+        base.a_clock.s_length * math.sin(s / 60 * 2 * math.pi - math.pi / 2))
+    cairo_stroke(cr)
+
+    cairo_set_line_width(cr,base.a_clock.m_width)
+    cairo_set_source_rgba(cr,0.265625,00.265625,0.578125,1)
+    cairo_move_to(cr, base.x + base.ring.x, base.y + base.ring.y)
+    cairo_rel_line_to(cr, base.a_clock.m_length * math.cos(m / 60 * 2 * math.pi - math.pi / 2),
+        base.a_clock.m_length * math.sin(m / 60 * 2 * math.pi - math.pi / 2))
+    cairo_stroke(cr)
+
+    cairo_set_line_width(cr,base.a_clock.h_width)
+    cairo_set_source_rgba(cr,0.265625,00.265625,0.578125,1)
+    cairo_move_to(cr, base.x + base.ring.x, base.y + base.ring.y)
+    cairo_rel_line_to(cr, base.a_clock.h_length * math.cos(h / 60 * 2 * math.pi - math.pi / 2),
+        base.a_clock.h_length * math.sin(h / 60 * 2 * math.pi - math.pi / 2))
+    cairo_stroke(cr)
+    ----------------------------------------------------------------------------
+
 
     --System Monitor
     cairo_set_line_width(cr,5 * base.scale)
