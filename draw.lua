@@ -209,14 +209,14 @@ function conky_main()
     cairo_set_source_rgba(cr,0.265625,00.265625,0.578125,1)
     cairo_move_to(cr, base.x + base.monitor.x, base.y + base.monitor.y + 115 * base.scale)
     cairo_set_line_width(cr, 5)
-    cairo_rel_line_to(cr, 330, 0)
+    cairo_rel_line_to(cr, 330 * base.scale, 0)
     cairo_stroke(cr)
 
     cairo_set_source_rgba( cr,base.color.r, base.color.g, base.color.b,
         base.color.a)
     cairo_move_to(cr, base.x + base.monitor.x, base.y + base.monitor.y + 115 * base.scale)
-    cairo_set_line_width(cr, 5)
-    cairo_rel_line_to(cr, 330 * track_perc, 0)
+    cairo_set_line_width(cr, 5 * base.scale)
+    cairo_rel_line_to(cr, 330 * base.scale * track_perc, 0)
 
 
     cairo_stroke(cr)
