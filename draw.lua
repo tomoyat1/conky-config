@@ -28,7 +28,7 @@ base.monitor = {
 
 base.clock = {
     x = 310 * base.scale,
-    y = 230 * base.scale,
+    y = 225 * base.scale,
     time_font = "M+ 1mn thin",
     time_font_size = 169 * base.scale,
     date_font_size = 36 * base.scale,
@@ -119,7 +119,7 @@ function conky_main()
     cairo_select_font_face(cr, base.clock.time_font, CAIRO_FONT_SLANT_NORMAL,
         CAIRO_FONT_WEIGHT_NORMAL);
     cairo_move_to(cr, base.x + base.clock.x - 13 * base.scale,
-        base.y + base.clock.y + 140 * base.scale)
+        base.y + base.clock.y + 145 * base.scale)
     cairo_set_font_size(cr, base.clock.time_font_size)
     cairo_show_text(cr, conky_parse("${time %H:%M}"));
     cairo_stroke(cr)
