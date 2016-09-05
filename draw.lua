@@ -27,8 +27,8 @@ base.monitor = {
 }
 
 base.clock = {
-    x = 10 * base.scale,
-    y = 140 * base.scale,
+    x = 310 * base.scale,
+    y = 230 * base.scale,
     time_font = "M+ 1mn thin",
     time_font_size = 169 * base.scale,
     date_font_size = 36 * base.scale,
