@@ -52,6 +52,11 @@ base.monitor = {
     y = base.clock.y + 180 * base.scale,
     font = "M+ 1mn light",
     font_size = 20 * base.scale,
+    scroll_index = {
+        artist = 0,
+        album = 0,
+        title = 0,
+    },
 }
 --------------------------------------------------------------------------------
 function draw_monitor_ring(cr, state, label, perc, func)
@@ -73,6 +78,23 @@ function draw_monitor_ring(cr, state, label, perc, func)
     cairo_show_text(cr, label)
     cairo_stroke(cr)
     state.int_cnt = state.int_cnt + 1
+end
+
+function inc_scroll_index()
+    base.monitor.scroll_index.title = base.monitor.scroll_index.title + 1
+    base.monitor.scroll_index.artist = base.monitor.scroll_index.artist + 1
+    base.monitor.scroll_index.album = base.monitor.scroll_index.album + 1
+
+    if base.monitor.scroll_index.title > conky_parse("${mpd_title}"):len() then
+        base.monitor.scroll_index.title = 0
+    end
+    if base.monitor.scroll_index.artist > conky_parse("${mpd_artist}"):len() then
+        base.monitor.scroll_index.artist = 0
+    end
+    if base.monitor.scroll_index.album > conky_parse("${mpd_album}"):len() then
+        base.monitor.scroll_index.album = 0
+    end
+
 end
 
 --main draw function
@@ -142,7 +164,6 @@ function conky_main()
     cpu_perc=tonumber(conky_parse("${cpu}"))
     mem_perc=tonumber(conky_parse("${memperc}"))
     bat_perc=tonumber(conky_parse("${battery_percent}"))
-    bat_perc=100
     local ring_state = {
         int_cnt = 0
     }
@@ -198,13 +219,47 @@ function conky_main()
     cairo_move_to(cr, base.x + base.monitor.x + 160 * base.scale, base.y + base.monitor.y + 20 * base.scale)
     cairo_show_text(cr, conky_parse("Down  ${downspeed wlp7s0}"))
 
-    local track_perc = tonumber(conky_parse("${mpd_percent}")) / 100
+    local title_perc = tonumber(conky_parse("${mpd_percent}")) / 100
     cairo_move_to(cr, base.x + base.monitor.x, base.y + base.monitor.y + 60 * base.scale)
-    cairo_show_text(cr, conky_parse("${mpd_artist}"))
+
+    local str = conky_parse("${mpd_artist}")
+    local artist
+    str = conky_parse("${mpd_artist}")
+    if str:len() > 33 then
+        print("foo")
+        artist = string.sub(str,
+            1 + base.monitor.scroll_index.artist,
+            33 + base.monitor.scroll_index.artist)
+    else
+        artist = str
+    end
+    cairo_show_text(cr, artist)
+
     cairo_move_to(cr, base.x + base.monitor.x, base.y + base.monitor.y + 80 * base.scale)
-    cairo_show_text(cr, conky_parse("${mpd_album}"))
+    local album
+    str = conky_parse("${mpd_album}")
+    if str:len() > 33 then
+        print("foo")
+        album = string.sub(str,
+            1 + base.monitor.scroll_index.album,
+            33 + base.monitor.scroll_index.album)
+    else
+        album = str
+    end
+    cairo_show_text(cr, album)
+
     cairo_move_to(cr, base.x + base.monitor.x, base.y + base.monitor.y + 100 * base.scale)
-    cairo_show_text(cr, conky_parse("${mpd_title}"))
+    local title
+    str = conky_parse("${mpd_title}")
+    if str:len() > 33 then
+        title = string.sub(str,
+            1 + base.monitor.scroll_index.title,
+            33 + base.monitor.scroll_index.title)
+    else
+        title = str
+    end
+    cairo_show_text(cr, title)
+    inc_scroll_index() 
 
     cairo_set_source_rgba(cr,0.265625,00.265625,0.578125,1)
     cairo_move_to(cr, base.x + base.monitor.x, base.y + base.monitor.y + 115 * base.scale)
@@ -216,7 +271,7 @@ function conky_main()
         base.color.a)
     cairo_move_to(cr, base.x + base.monitor.x, base.y + base.monitor.y + 115 * base.scale)
     cairo_set_line_width(cr, 5 * base.scale)
-    cairo_rel_line_to(cr, 330 * base.scale * track_perc, 0)
+    cairo_rel_line_to(cr, 330 * base.scale * title_perc, 0)
 
 
     cairo_stroke(cr)
