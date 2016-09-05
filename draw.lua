@@ -20,6 +20,7 @@ base = {
 base.monitor = {
     x = 510 * base.scale,
     y = 320 * base.scale,
+    font = "M+ 1mn",
     radius = 250 * base.scale,
     interval = 25 * base.scale,
 
@@ -57,6 +58,9 @@ function conky_main()
     mem_perc=tonumber(conky_parse("${memperc}"))
     bat_perc=tonumber(conky_parse("${battery_percent}"))
 
+    --CPU
+    cairo_set_source_rgba( cr,base.color.r, base.color.g, base.color.b,
+        base.color.a)
     if cpu_perc > 90 then
         cairo_set_source_rgba (cr,1,0.46875,0.68359375,1)
     end
@@ -65,6 +69,16 @@ function conky_main()
         - math.pi/2 + 2.7 * cpu_perc * (math.pi/180))
     cairo_stroke(cr)
 
+    cairo_move_to(cr, base.x + base.monitor.x - 35 * base.scale,
+        base.y + base.monitor.y - 244 * base.scale)
+    cairo_select_font_face(cr, base.monitor.font, CAIRO_FONT_SLANT_NORMAL,
+        CAIRO_FONT_WEIGHT_NORMAL);
+    cairo_set_font_size(cr, 18)
+    cairo_show_text(cr, "CPU")
+    cairo_stroke(cr)
+    ---------------------------------------------------------------------------
+
+    --Memory
     cairo_set_source_rgba (cr,0.52734375,0.68359375,1,1)
     if mem_perc > 87.5 then
         cairo_set_source_rgba (cr,1,0.46875,0.68359375,1)
@@ -74,17 +88,39 @@ function conky_main()
         - math.pi/2 + 2.7 * mem_perc * (math.pi/180))
     cairo_stroke(cr)
 
-    cairo_set_source_rgba (cr,0.52734375,0.68359375,1,1)
-    if bat_perc < 20 then
-        cairo_set_source_rgba (cr,1,0.46875,0.68359375,1)
-    end
-    --[[cairo_arc(cr, base.x + base.monitor.x, base.y + base.monitor.y,
-        base.monitor.radius + (base.monitor.interval * 2), - math.pi/2,
-        - math.pi/2 + 2.7 * bat_perc * (math.pi/180))--]]
-    cairo_arc(cr, base.x + base.monitor.x, base.y + base.monitor.y,
-        base.monitor.radius + (base.monitor.interval * 2), - math.pi/2,
-        - math.pi/2 + 2.7 * bat_perc * (math.pi/180))
+    cairo_move_to(cr, base.x + base.monitor.x - 35 * base.scale,
+        base.y + base.monitor.y - 268 * base.scale)
+    cairo_select_font_face(cr, base.monitor.font, CAIRO_FONT_SLANT_NORMAL,
+        CAIRO_FONT_WEIGHT_NORMAL);
+    cairo_set_font_size(cr, 18)
+    cairo_show_text(cr, "MEM")
     cairo_stroke(cr)
+    ---------------------------------------------------------------------------
+
+    --Battery
+    -- If bat_perc is 0, system is dead or doesn't have a battery
+    if bat_perc > 0 then
+        cairo_set_source_rgba(cr,0.52734375,0.68359375,1,1)
+        if bat_perc < 20 then
+            cairo_set_source_rgba (cr,1,0.46875,0.68359375,1)
+        end
+        --[[cairo_arc(cr, base.x + base.monitor.x, base.y + base.monitor.y,
+            base.monitor.radius + (base.monitor.interval * 2), - math.pi/2,
+            - math.pi/2 + 2.7 * 100 * (math.pi/180))--]]
+        cairo_arc(cr, base.x + base.monitor.x, base.y + base.monitor.y,
+            base.monitor.radius + (base.monitor.interval * 2), - math.pi/2,
+            - math.pi/2 + 2.7 * bat_perc * (math.pi/180))
+        cairo_stroke(cr)
+
+        cairo_move_to(cr, base.x + base.monitor.x - 35 * base.scale,
+            base.y + base.monitor.y - 293 * base.scale)
+        cairo_select_font_face(cr, base.monitor.font, CAIRO_FONT_SLANT_NORMAL,
+            CAIRO_FONT_WEIGHT_NORMAL);
+        cairo_set_font_size(cr, 18)
+        cairo_show_text(cr, "BAT")
+        cairo_stroke(cr)
+    end
+    ---------------------------------------------------------------------------
 
     --Clock
     cairo_set_source_rgba( cr,base.color.r, base.color.g, base.color.b,
