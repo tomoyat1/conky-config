@@ -86,14 +86,10 @@ function conky_main()
     draw_monitor_ring(cr, ring_state, "CPU", cpu_perc, function(v)
         return (v > 90)
     end)
-    ---------------------------------------------------------------------------
-
     --Memory
     draw_monitor_ring(cr, ring_state, "MEM", mem_perc, function(v)
         return (v > 87.5)
     end)
-    ---------------------------------------------------------------------------
-
     --Battery
     -- If bat_perc is 0, system is dead or doesn't have a battery
     if bat_perc > 0 then
@@ -101,9 +97,6 @@ function conky_main()
             return (v <= 20)
         end)
     end
-
-    --Disk IO
-
     ---------------------------------------------------------------------------
 
     --Clock
