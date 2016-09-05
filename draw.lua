@@ -142,6 +142,7 @@ function conky_main()
     cpu_perc=tonumber(conky_parse("${cpu}"))
     mem_perc=tonumber(conky_parse("${memperc}"))
     bat_perc=tonumber(conky_parse("${battery_percent}"))
+    bat_perc=100
     local ring_state = {
         int_cnt = 0
     }
@@ -196,6 +197,27 @@ function conky_main()
     cairo_show_text(cr, conky_parse("Up    ${upspeed wlp7s0}"))
     cairo_move_to(cr, base.x + base.monitor.x + 160 * base.scale, base.y + base.monitor.y + 20 * base.scale)
     cairo_show_text(cr, conky_parse("Down  ${downspeed wlp7s0}"))
+
+    local track_perc = tonumber(conky_parse("${mpd_percent}")) / 100
+    cairo_move_to(cr, base.x + base.monitor.x, base.y + base.monitor.y + 60 * base.scale)
+    cairo_show_text(cr, conky_parse("${mpd_artist}"))
+    cairo_move_to(cr, base.x + base.monitor.x, base.y + base.monitor.y + 80 * base.scale)
+    cairo_show_text(cr, conky_parse("${mpd_album}"))
+    cairo_move_to(cr, base.x + base.monitor.x, base.y + base.monitor.y + 100 * base.scale)
+    cairo_show_text(cr, conky_parse("${mpd_title}"))
+
+    cairo_set_source_rgba(cr,0.265625,00.265625,0.578125,1)
+    cairo_move_to(cr, base.x + base.monitor.x, base.y + base.monitor.y + 115 * base.scale)
+    cairo_set_line_width(cr, 5)
+    cairo_rel_line_to(cr, 330, 0)
+    cairo_stroke(cr)
+
+    cairo_set_source_rgba( cr,base.color.r, base.color.g, base.color.b,
+        base.color.a)
+    cairo_move_to(cr, base.x + base.monitor.x, base.y + base.monitor.y + 115 * base.scale)
+    cairo_set_line_width(cr, 5)
+    cairo_rel_line_to(cr, 330 * track_perc, 0)
+
 
     cairo_stroke(cr)
     ----------------------------------------------------------------------------
