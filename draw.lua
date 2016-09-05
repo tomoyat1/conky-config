@@ -46,7 +46,7 @@ function draw_monitor_ring(cr, state, label, perc, func)
     cairo_stroke(cr)
 
     cairo_move_to(cr, base.x + base.monitor.x - 40 * base.scale,
-        base.y + base.monitor.y - (246 + base.monitor.interval * state.int_cnt) * base.scale)
+        base.y + base.monitor.y - (246 * base.scale + base.monitor.interval * state.int_cnt))
     cairo_select_font_face(cr, base.monitor.font, CAIRO_FONT_SLANT_NORMAL,
         CAIRO_FONT_WEIGHT_NORMAL);
     cairo_set_font_size(cr, base.monitor.font_size)
