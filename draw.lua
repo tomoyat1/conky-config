@@ -35,6 +35,7 @@ base.a_clock = {
     s_width = 1,
     m_width = 2,
     h_width = 3,
+    fluid = true,
 }
 
 base.clock = {
@@ -91,24 +92,46 @@ function conky_main()
     h = tonumber(conky_parse("${time %H}"))
     cairo_set_line_width(cr,base.a_clock.s_width)
     cairo_set_source_rgba(cr,0.265625,00.265625,0.578125,1)
-    cairo_move_to(cr, base.x + base.ring.x, base.y + base.ring.y)
-    cairo_rel_line_to(cr, base.a_clock.s_length * math.cos(s / 60 * 2 * math.pi - math.pi / 2),
-        base.a_clock.s_length * math.sin(s / 60 * 2 * math.pi - math.pi / 2))
-    cairo_stroke(cr)
+    if base.a_clock.fluid then
+        cairo_move_to(cr, base.x + base.ring.x, base.y + base.ring.y)
+        cairo_rel_line_to(cr, base.a_clock.s_length * math.cos(s / 60 * 2 * math.pi - math.pi / 2),
+            base.a_clock.s_length * math.sin(s / 60 * 2 * math.pi - math.pi / 2))
+        cairo_stroke(cr)
 
-    cairo_set_line_width(cr,base.a_clock.m_width)
-    cairo_set_source_rgba(cr,0.265625,00.265625,0.578125,1)
-    cairo_move_to(cr, base.x + base.ring.x, base.y + base.ring.y)
-    cairo_rel_line_to(cr, base.a_clock.m_length * math.cos(m / 60 * 2 * math.pi - math.pi / 2),
-        base.a_clock.m_length * math.sin(m / 60 * 2 * math.pi - math.pi / 2))
-    cairo_stroke(cr)
+        cairo_set_line_width(cr,base.a_clock.m_width)
+        cairo_set_source_rgba(cr,0.265625,00.265625,0.578125,1)
+        cairo_move_to(cr, base.x + base.ring.x, base.y + base.ring.y)
+        cairo_rel_line_to(cr, base.a_clock.m_length * math.cos((m / 60 + s / 3600) * 2 * math.pi - math.pi / 2),
+            base.a_clock.m_length * math.sin((m / 60 + s / 3600) * 2 * math.pi - math.pi / 2))
+        cairo_stroke(cr)
+        cairo_set_line_width(cr,base.a_clock.h_width)
+        cairo_set_source_rgba(cr,0.265625,00.265625,0.578125,1)
+        cairo_move_to(cr, base.x + base.ring.x, base.y + base.ring.y)
+        cairo_rel_line_to(cr, base.a_clock.h_length * math.cos((h / 60 + m / 3600) * 2 * math.pi - math.pi / 2),
+            base.a_clock.h_length * math.sin((h / 60 + m / 3600) * 2 * math.pi - math.pi / 2))
+        cairo_stroke(cr)
+    else
+        cairo_move_to(cr, base.x + base.ring.x, base.y + base.ring.y)
+        cairo_rel_line_to(cr, base.a_clock.s_length * math.cos(s / 60 * 2 * math.pi - math.pi / 2),
+            base.a_clock.s_length * math.sin(s / 60 * 2 * math.pi - math.pi / 2))
+        cairo_stroke(cr)
 
-    cairo_set_line_width(cr,base.a_clock.h_width)
-    cairo_set_source_rgba(cr,0.265625,00.265625,0.578125,1)
-    cairo_move_to(cr, base.x + base.ring.x, base.y + base.ring.y)
-    cairo_rel_line_to(cr, base.a_clock.h_length * math.cos(h / 60 * 2 * math.pi - math.pi / 2),
-        base.a_clock.h_length * math.sin(h / 60 * 2 * math.pi - math.pi / 2))
-    cairo_stroke(cr)
+        cairo_set_line_width(cr,base.a_clock.m_width)
+        cairo_set_source_rgba(cr,0.265625,00.265625,0.578125,1)
+        cairo_move_to(cr, base.x + base.ring.x, base.y + base.ring.y)
+        cairo_rel_line_to(cr, base.a_clock.m_length * math.cos(m / 60 * 2 * math.pi - math.pi / 2),
+            base.a_clock.m_length * math.sin(m / 60 * 2 * math.pi - math.pi / 2))
+        cairo_stroke(cr)
+
+        cairo_set_line_width(cr,base.a_clock.h_width)
+        cairo_set_source_rgba(cr,0.265625,00.265625,0.578125,1)
+        cairo_move_to(cr, base.x + base.ring.x, base.y + base.ring.y)
+        cairo_rel_line_to(cr, base.a_clock.h_length * math.cos(h / 60 * 2 * math.pi - math.pi / 2),
+            base.a_clock.h_length * math.sin(h / 60 * 2 * math.pi - math.pi / 2))
+        cairo_stroke(cr)
+    end
+
+
     ----------------------------------------------------------------------------
 
 
