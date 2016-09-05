@@ -219,62 +219,67 @@ function conky_main()
     cairo_move_to(cr, base.x + base.monitor.x + 160 * base.scale, base.y + base.monitor.y + 20 * base.scale)
     cairo_show_text(cr, conky_parse("Down  ${downspeed wlp7s0}"))
 
-    local title_perc = tonumber(conky_parse("${mpd_percent}")) / 100
-    cairo_move_to(cr, base.x + base.monitor.x, base.y + base.monitor.y + 60 * base.scale)
+    --MPD
+    if conky_parse("${mpd_status}") == "Playing" then
+        local title_perc = tonumber(conky_parse("${mpd_percent}")) / 100
+        cairo_move_to(cr, base.x + base.monitor.x, base.y + base.monitor.y + 60 * base.scale)
 
-    local str = conky_parse("${mpd_artist}")
-    local artist
-    str = conky_parse("${mpd_artist}")
-    if str:len() > 33 then
-        print("foo")
-        artist = string.sub(str,
-            1 + base.monitor.scroll_index.artist,
-            33 + base.monitor.scroll_index.artist)
+        local str = conky_parse("${mpd_artist}")
+        local artist
+        str = conky_parse("${mpd_artist}")
+        if str:len() > 33 then
+            artist = string.sub(str,
+                1 + base.monitor.scroll_index.artist,
+                33 + base.monitor.scroll_index.artist)
+        else
+            artist = str
+        end
+        cairo_show_text(cr, artist)
+
+        cairo_move_to(cr, base.x + base.monitor.x, base.y + base.monitor.y + 80 * base.scale)
+        local album
+        str = conky_parse("${mpd_album}")
+        if str:len() > 33 then
+            album = string.sub(str,
+                1 + base.monitor.scroll_index.album,
+                33 + base.monitor.scroll_index.album)
+        else
+            album = str
+        end
+        cairo_show_text(cr, album)
+
+        cairo_move_to(cr, base.x + base.monitor.x, base.y + base.monitor.y + 100 * base.scale)
+        local title
+        str = conky_parse("${mpd_title}")
+        if str:len() > 33 then
+            title = string.sub(str,
+                1 + base.monitor.scroll_index.title,
+                33 + base.monitor.scroll_index.title)
+        else
+            title = str
+        end
+        cairo_show_text(cr, title)
+        inc_scroll_index() 
+
+        cairo_set_source_rgba(cr,0.265625,00.265625,0.578125,1)
+        cairo_move_to(cr, base.x + base.monitor.x, base.y + base.monitor.y + 115 * base.scale)
+        cairo_set_line_width(cr, 5)
+        cairo_rel_line_to(cr, 330 * base.scale, 0)
+        cairo_stroke(cr)
+
+        cairo_set_source_rgba( cr,base.color.r, base.color.g, base.color.b,
+            base.color.a)
+        cairo_move_to(cr, base.x + base.monitor.x, base.y + base.monitor.y + 115 * base.scale)
+        cairo_set_line_width(cr, 5 * base.scale)
+        cairo_rel_line_to(cr, 330 * base.scale * title_perc, 0)
+        cairo_stroke(cr)
     else
-        artist = str
+        cairo_move_to(cr, base.x + base.monitor.x, base.y + base.monitor.y + 60 * base.scale)
+        cairo_set_source_rgba(cr,0.265625,00.265625,0.578125,1)
+        cairo_show_text(cr, "MPD: Not playing")
+        cairo_stroke(cr)
+
     end
-    cairo_show_text(cr, artist)
-
-    cairo_move_to(cr, base.x + base.monitor.x, base.y + base.monitor.y + 80 * base.scale)
-    local album
-    str = conky_parse("${mpd_album}")
-    if str:len() > 33 then
-        print("foo")
-        album = string.sub(str,
-            1 + base.monitor.scroll_index.album,
-            33 + base.monitor.scroll_index.album)
-    else
-        album = str
-    end
-    cairo_show_text(cr, album)
-
-    cairo_move_to(cr, base.x + base.monitor.x, base.y + base.monitor.y + 100 * base.scale)
-    local title
-    str = conky_parse("${mpd_title}")
-    if str:len() > 33 then
-        title = string.sub(str,
-            1 + base.monitor.scroll_index.title,
-            33 + base.monitor.scroll_index.title)
-    else
-        title = str
-    end
-    cairo_show_text(cr, title)
-    inc_scroll_index() 
-
-    cairo_set_source_rgba(cr,0.265625,00.265625,0.578125,1)
-    cairo_move_to(cr, base.x + base.monitor.x, base.y + base.monitor.y + 115 * base.scale)
-    cairo_set_line_width(cr, 5)
-    cairo_rel_line_to(cr, 330 * base.scale, 0)
-    cairo_stroke(cr)
-
-    cairo_set_source_rgba( cr,base.color.r, base.color.g, base.color.b,
-        base.color.a)
-    cairo_move_to(cr, base.x + base.monitor.x, base.y + base.monitor.y + 115 * base.scale)
-    cairo_set_line_width(cr, 5 * base.scale)
-    cairo_rel_line_to(cr, 330 * base.scale * title_perc, 0)
-
-
-    cairo_stroke(cr)
     ----------------------------------------------------------------------------
     cairo_destroy(cr)
     cairo_surface_destroy(cs)
