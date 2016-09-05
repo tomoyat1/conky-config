@@ -1,5 +1,6 @@
 require 'cairo'
 require 'math'
+require 'bit'
 
 --config
 -------------------------------------------------------------------------------
@@ -8,10 +9,9 @@ base = {
     y = 10,
     scale = 1,
     color = {
-        r = 0.52734375,
-        g = 0.68359375,
-        b = 1,
-        a = 1,
+        normal = 0x87afff,
+        dark = 0x444494,
+        danger = 0xff78af,
     },
     ring = {},
     clock = {},
@@ -60,10 +60,11 @@ base.monitor = {
 }
 --------------------------------------------------------------------------------
 function draw_monitor_ring(cr, state, label, perc, func)
-    cairo_set_source_rgba(cr, base.color.r, base.color.g, base.color.b,
-        base.color.a)
+    local r, g, b = color_convert(base.color.normal)
+    cairo_set_source_rgba(cr, r, g, b, 1)
     if func(perc) then
-        cairo_set_source_rgba(cr, 1, 0.46875, 0.68359375, 1)
+        local r, g, b = color_convert(base.color.danger)
+        cairo_set_source_rgba(cr, r, g, b, 1)
     end
     cairo_arc(cr, base.x + base.ring.x, base.y + base.ring.y,
         base.ring.radius + (base.ring.interval * state.int_cnt), - math.pi/2,
@@ -97,6 +98,13 @@ function inc_scroll_index()
 
 end
 
+function color_convert(c)
+    r = bit.rshift(c, 16)
+    g = bit.rshift(c - bit.lshift(r, 16), 8)
+    b = bit.rshift(c - bit.lshift(r, 16) - bit.lshift(g, 8), 0)
+    return r / 256, g / 256, b / 256
+end
+
 --main draw function
 -------------------------------------------------------------------------------
 function conky_main()
@@ -113,7 +121,8 @@ function conky_main()
     m = tonumber(conky_parse("${time %M}"))
     h = tonumber(conky_parse("${time %H}"))
     cairo_set_line_width(cr,base.a_clock.s_width)
-    cairo_set_source_rgba(cr,0.265625,00.265625,0.578125,1)
+    local r, g, b = color_convert(base.color.dark)
+    cairo_set_source_rgba(cr, r, g, b, 1)
     if base.a_clock.fluid then
         cairo_move_to(cr, base.x + base.ring.x, base.y + base.ring.y)
         cairo_rel_line_to(cr, base.a_clock.s_length * math.cos(s / 60 * 2 * math.pi - math.pi / 2),
@@ -121,13 +130,11 @@ function conky_main()
         cairo_stroke(cr)
 
         cairo_set_line_width(cr,base.a_clock.m_width)
-        cairo_set_source_rgba(cr,0.265625,00.265625,0.578125,1)
         cairo_move_to(cr, base.x + base.ring.x, base.y + base.ring.y)
         cairo_rel_line_to(cr, base.a_clock.m_length * math.cos((m / 60 + s / 3600) * 2 * math.pi - math.pi / 2),
             base.a_clock.m_length * math.sin((m / 60 + s / 3600) * 2 * math.pi - math.pi / 2))
         cairo_stroke(cr)
         cairo_set_line_width(cr,base.a_clock.h_width)
-        cairo_set_source_rgba(cr,0.265625,00.265625,0.578125,1)
         cairo_move_to(cr, base.x + base.ring.x, base.y + base.ring.y)
         cairo_rel_line_to(cr, base.a_clock.h_length * math.cos((h / 60 + m / 3600) * 2 * math.pi - math.pi / 2),
             base.a_clock.h_length * math.sin((h / 60 + m / 3600) * 2 * math.pi - math.pi / 2))
@@ -139,14 +146,12 @@ function conky_main()
         cairo_stroke(cr)
 
         cairo_set_line_width(cr,base.a_clock.m_width)
-        cairo_set_source_rgba(cr,0.265625,00.265625,0.578125,1)
         cairo_move_to(cr, base.x + base.ring.x, base.y + base.ring.y)
         cairo_rel_line_to(cr, base.a_clock.m_length * math.cos(m / 60 * 2 * math.pi - math.pi / 2),
             base.a_clock.m_length * math.sin(m / 60 * 2 * math.pi - math.pi / 2))
         cairo_stroke(cr)
 
         cairo_set_line_width(cr,base.a_clock.h_width)
-        cairo_set_source_rgba(cr,0.265625,00.265625,0.578125,1)
         cairo_move_to(cr, base.x + base.ring.x, base.y + base.ring.y)
         cairo_rel_line_to(cr, base.a_clock.h_length * math.cos(h / 60 * 2 * math.pi - math.pi / 2),
             base.a_clock.h_length * math.sin(h / 60 * 2 * math.pi - math.pi / 2))
@@ -159,7 +164,8 @@ function conky_main()
 
     --System Monitor
     cairo_set_line_width(cr,5 * base.scale)
-    cairo_set_source_rgba(cr,0.52734375,0.68359375,1,1)
+    local r, g, b = color_convert(base.color.normal)
+    cairo_set_source_rgba(cr, r, g, b, 1)
 
     cpu_perc=tonumber(conky_parse("${cpu}"))
     mem_perc=tonumber(conky_parse("${memperc}"))
@@ -186,8 +192,8 @@ function conky_main()
     ---------------------------------------------------------------------------
 
     --Clock
-    cairo_set_source_rgba( cr,base.color.r, base.color.g, base.color.b,
-        base.color.a)
+    local r, g, b = color_convert(base.color.normal)
+    cairo_set_source_rgba(cr, r, g, b, 1)
     cairo_select_font_face(cr, base.clock.date_font, CAIRO_FONT_SLANT_NORMAL,
         CAIRO_FONT_WEIGHT_NORMAL);
     cairo_move_to(cr, base.x + base.clock.x + 30, base.y + base.clock.y);
@@ -205,8 +211,8 @@ function conky_main()
 
 
     --Monitor
-    cairo_set_source_rgba( cr,base.color.r, base.color.g, base.color.b,
-        base.color.a)
+    local r, g, b = color_convert(base.color.normal)
+    cairo_set_source_rgba(cr, r, g, b, 1)
     cairo_select_font_face(cr, base.monitor.font, CAIRO_FONT_SLANT_NORMAL,
         CAIRO_FONT_WEIGHT_NORMAL);
     cairo_set_font_size(cr, base.monitor.font_size)
@@ -261,21 +267,23 @@ function conky_main()
         cairo_show_text(cr, title)
         inc_scroll_index() 
 
-        cairo_set_source_rgba(cr,0.265625,00.265625,0.578125,1)
+        local r, g, b = color_convert(base.color.dark)
+        cairo_set_source_rgba(cr, r, g, b, 1)
         cairo_move_to(cr, base.x + base.monitor.x, base.y + base.monitor.y + 115 * base.scale)
         cairo_set_line_width(cr, 5)
         cairo_rel_line_to(cr, 330 * base.scale, 0)
         cairo_stroke(cr)
 
-        cairo_set_source_rgba( cr,base.color.r, base.color.g, base.color.b,
-            base.color.a)
+        local r, g, b = color_convert(base.color.normal)
+        cairo_set_source_rgba(cr, r, g, b, 1)
         cairo_move_to(cr, base.x + base.monitor.x, base.y + base.monitor.y + 115 * base.scale)
         cairo_set_line_width(cr, 5 * base.scale)
         cairo_rel_line_to(cr, 330 * base.scale * title_perc, 0)
         cairo_stroke(cr)
     else
         cairo_move_to(cr, base.x + base.monitor.x, base.y + base.monitor.y + 60 * base.scale)
-        cairo_set_source_rgba(cr,0.265625,00.265625,0.578125,1)
+        local r, g, b = color_convert(base.color.dark)
+        cairo_set_source_rgba(cr, r, g, b, 1)
         cairo_show_text(cr, "MPD: Not playing")
         cairo_stroke(cr)
 
