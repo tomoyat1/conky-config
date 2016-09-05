@@ -4,7 +4,7 @@ require 'cairo'
 -------------------------------------------------------------------------------
 base = { 
     x = 440,
-    y = 0,
+    y = 10,
     scale = 1,
     font = "M+ 1mn thin",
     color = {
@@ -20,10 +20,10 @@ base = {
 base.monitor = {
     x = 510 * base.scale,
     y = 320 * base.scale,
-    font = "M+ 1mn",
+    font = "M+ 1mn light",
+    font_size = 22 * base.scale,
     radius = 250 * base.scale,
-    interval = 25 * base.scale,
-
+    interval = 30 * base.scale,
 }
 
 base.clock = {
@@ -69,11 +69,11 @@ function conky_main()
         - math.pi/2 + 2.7 * cpu_perc * (math.pi/180))
     cairo_stroke(cr)
 
-    cairo_move_to(cr, base.x + base.monitor.x - 35 * base.scale,
-        base.y + base.monitor.y - 244 * base.scale)
+    cairo_move_to(cr, base.x + base.monitor.x - 40 * base.scale,
+        base.y + base.monitor.y - 246 * base.scale)
     cairo_select_font_face(cr, base.monitor.font, CAIRO_FONT_SLANT_NORMAL,
         CAIRO_FONT_WEIGHT_NORMAL);
-    cairo_set_font_size(cr, 18)
+    cairo_set_font_size(cr, base.monitor.font_size)
     cairo_show_text(cr, "CPU")
     cairo_stroke(cr)
     ---------------------------------------------------------------------------
@@ -88,11 +88,11 @@ function conky_main()
         - math.pi/2 + 2.7 * mem_perc * (math.pi/180))
     cairo_stroke(cr)
 
-    cairo_move_to(cr, base.x + base.monitor.x - 35 * base.scale,
-        base.y + base.monitor.y - 268 * base.scale)
+    cairo_move_to(cr, base.x + base.monitor.x - 40 * base.scale,
+        base.y + base.monitor.y - (246 + base.monitor.interval) * base.scale)
     cairo_select_font_face(cr, base.monitor.font, CAIRO_FONT_SLANT_NORMAL,
         CAIRO_FONT_WEIGHT_NORMAL);
-    cairo_set_font_size(cr, 18)
+    cairo_set_font_size(cr, base.monitor.font_size)
     cairo_show_text(cr, "MEM")
     cairo_stroke(cr)
     ---------------------------------------------------------------------------
@@ -112,11 +112,11 @@ function conky_main()
             - math.pi/2 + 2.7 * bat_perc * (math.pi/180))
         cairo_stroke(cr)
 
-        cairo_move_to(cr, base.x + base.monitor.x - 35 * base.scale,
-            base.y + base.monitor.y - 293 * base.scale)
+        cairo_move_to(cr, base.x + base.monitor.x - 40 * base.scale,
+            base.y + base.monitor.y - (246 + base.monitor.interval * 2) * base.scale)
         cairo_select_font_face(cr, base.monitor.font, CAIRO_FONT_SLANT_NORMAL,
             CAIRO_FONT_WEIGHT_NORMAL);
-        cairo_set_font_size(cr, 18)
+        cairo_set_font_size(cr, base.monitor.font_size)
         cairo_show_text(cr, "BAT")
         cairo_stroke(cr)
     end
