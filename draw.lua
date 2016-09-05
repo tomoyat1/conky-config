@@ -5,6 +5,7 @@ require 'cairo'
 base = { 
     x = 440,
     y = 0,
+    scale = 1,
     font = "M+ 1mn thin",
     color = {
         r = 0.52734375,
@@ -17,19 +18,19 @@ base = {
 }
 
 base.monitor = {
-    x = 510,
-    y = 320,
-    radius = 250,
-    interval = 25,
+    x = 510 * base.scale,
+    y = 320 * base.scale,
+    radius = 250 * base.scale,
+    interval = 25 * base.scale,
 
 }
 
 base.clock = {
-    x = 10,
-    y = 140,
+    x = 10 * base.scale,
+    y = 140 * base.scale,
     time_font = "M+ 1mn thin",
-    time_font_size = 169,
-    date_font_size = 36
+    time_font_size = 169 * base.scale,
+    date_font_size = 36 * base.scale,
 }
 
 --main draw function
@@ -48,7 +49,8 @@ function conky_main()
     cairo_set_source_rgba(cr,base.color.r, base.color.g, base.color.b,
         base.color.a)
 
-    cairo_set_line_width(cr,5)
+    --System Monitor
+    cairo_set_line_width(cr,5 * base.scale)
     cairo_set_source_rgba(cr,0.52734375,0.68359375,1,1)
 
     cpu_perc=tonumber(conky_parse("${cpu}"))
@@ -84,6 +86,7 @@ function conky_main()
         - math.pi/2 + 2.7 * bat_perc * (math.pi/180))
     cairo_stroke(cr)
 
+    --Clock
     cairo_set_source_rgba( cr,base.color.r, base.color.g, base.color.b,
         base.color.a)
     cairo_select_font_face(cr, base.font, CAIRO_FONT_SLANT_NORMAL,
@@ -95,7 +98,8 @@ function conky_main()
 
     cairo_select_font_face(cr, base.clock.time_font, CAIRO_FONT_SLANT_NORMAL,
         CAIRO_FONT_WEIGHT_NORMAL);
-    cairo_move_to(cr, base.x + base.clock.x - 13, base.y + base.clock.y + 140)
+    cairo_move_to(cr, base.x + base.clock.x - 13 * base.scale,
+        base.y + base.clock.y + 140 * base.scale)
     cairo_set_font_size(cr, base.clock.time_font_size)
     cairo_show_text(cr, conky_parse("${time %H:%M}"));
     cairo_stroke(cr)
