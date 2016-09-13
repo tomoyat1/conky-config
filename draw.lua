@@ -176,7 +176,6 @@ function conky_main()
     cairo_set_source_rgba(cr, r, g, b, 1)
 
     cpu_perc=tonumber(conky_parse("${cpu}"))
-    cpu_perc = 100
     mem_perc=tonumber(conky_parse("${memperc}"))
     bat_perc=tonumber(conky_parse("${battery_percent}"))
     local ring_state = {
