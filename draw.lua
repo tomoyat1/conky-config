@@ -226,12 +226,12 @@ function conky_main()
     cairo_set_font_size(cr, base.monitor.font_size)
     cairo_move_to(cr, base.x + base.monitor.x , base.y + base.monitor.y)
     cairo_show_text(cr, conky_parse("Read  ${diskio_read}"))
-    cairo_move_to(cr, base.x + base.monitor.x, base.y + base.monitor.y + 20 * base.scale)
-    cairo_show_text(cr, conky_parse("Write ${diskio_write}"))
     cairo_move_to(cr, base.x + base.monitor.x + 160 * base.scale, base.y + base.monitor.y)
-    cairo_show_text(cr, conky_parse("Up    ${upspeed wlp7s0}"))
+    cairo_show_text(cr, conky_parse("Write ${diskio_write}"))
+    cairo_move_to(cr, base.x + base.monitor.x, base.y + base.monitor.y + 20 * base.scale)
+    cairo_show_text(cr, conky_parse("Up    ${upspeed enp0s31f6}"))
     cairo_move_to(cr, base.x + base.monitor.x + 160 * base.scale, base.y + base.monitor.y + 20 * base.scale)
-    cairo_show_text(cr, conky_parse("Down  ${downspeed wlp7s0}"))
+    cairo_show_text(cr, conky_parse("Down  ${downspeed enp0s31f6}"))
 
     --MPD
     if conky_parse("${mpd_status}") == "Playing" then
