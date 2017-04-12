@@ -5,13 +5,17 @@ require 'bit'
 --config
 -------------------------------------------------------------------------------
 base = { 
-    x = 510,
-    y = 240,
-    scale = 1.5,
+    --todo: make this a constructor
+    display_width = 2560,
+    display_height = 1600,
+    x = 0,
+    y = 0,
+    scale = 1,
     color = {
         normal = 0x87afff,
         dark = 0x444494,
         danger = 0xff78af,
+        danger_dark = 0x984768,
     },
     ring = {},
     clock = {},
@@ -21,11 +25,11 @@ base = {
 }
 
 base.ring = {
-    x = 510 * base.scale,
-    y = 320 * base.scale,
+    x = base.display_width / 2,
+    y = base.display_height / 2,
     font = "M+ 1mn light",
     font_size = 22 * base.scale,
-    radius = 250 * base.scale,
+    radius = 700 * base.scale,
     interval = 30 * base.scale,
 }
 
@@ -33,9 +37,9 @@ base.a_clock = {
     s_length = base.ring.radius * base.scale,
     m_length = base.ring.radius * 0.8 * base.scale,
     h_length = base.ring.radius * 0.5 * base.scale,
-    s_width = 1,
-    m_width = 2,
-    h_width = 3,
+    s_width = 2,
+    m_width = 3,
+    h_width = 4,
     fluid = true,
 }
 
@@ -49,11 +53,20 @@ base.clock = {
 }
 
 base.monitor = {
-    x = base.clock.x + 35 * base.scale,
-    y = base.clock.y + 180 * base.scale,
+    x = 20,
+    y = 20,
     font = "M+ 1mn light",
     font_size = 20 * base.scale,
 }
+
+base.monitor.bars = {
+    x = 50,
+    y = 400,
+    font = "M+ 1mn light",
+    font_size = 26 * base.scale,
+    line_len = 800,
+}
+
 
 base.mpd = {
     x = base.monitor.x + 30 * base.scale,
@@ -67,64 +80,14 @@ base.mpd = {
     },
 }
 --------------------------------------------------------------------------------
-function draw_monitor_ring(cr, state, label, perc, func)
-    local r, g, b = color_convert(base.color.normal)
-    cairo_set_source_rgba(cr, r, g, b, 1)
-    if func(perc) then
-        local r, g, b = color_convert(base.color.danger)
-        cairo_set_source_rgba(cr, r, g, b, 1)
-    end
-    cairo_arc(cr, base.x + base.ring.x, base.y + base.ring.y,
-        base.ring.radius + (base.ring.interval * state.int_cnt), - math.pi/2,
-        - math.pi/2 + 2.7 * perc * (math.pi/180))
-    cairo_stroke(cr)
-
-    cairo_move_to(cr, base.x + base.ring.x - 40 * base.scale,
-        base.y + base.ring.y - (246 * base.scale + base.ring.interval * state.int_cnt))
-    cairo_select_font_face(cr, base.ring.font, CAIRO_FONT_SLANT_NORMAL,
-        CAIRO_FONT_WEIGHT_NORMAL);
-    cairo_set_font_size(cr, base.ring.font_size)
-    cairo_show_text(cr, label)
-    cairo_stroke(cr)
-    state.int_cnt = state.int_cnt + 1
+function draw_origin(cr)
+    cairo_set_line_width(cr, 10)
+    cairo_set_source_rgba(cr, 0, 0, 0, 1)
+    cairo_move_to(cr, base.x, base.y)
+    cairo_line_to(cr, base.x + 10, base.y)
+    cairo_stroke(cr);
 end
-
-function inc_scroll_index()
-    base.mpd.scroll_index.title = base.mpd.scroll_index.title + 1
-    base.mpd.scroll_index.artist = base.mpd.scroll_index.artist + 1
-    base.mpd.scroll_index.album = base.mpd.scroll_index.album + 1
-
-    if base.mpd.scroll_index.title > conky_parse("${mpd_title}"):len() then
-        base.mpd.scroll_index.title = 0
-    end
-    if base.mpd.scroll_index.artist > conky_parse("${mpd_artist}"):len() then
-        base.mpd.scroll_index.artist = 0
-    end
-    if base.mpd.scroll_index.album > conky_parse("${mpd_album}"):len() then
-        base.mpd.scroll_index.album = 0
-    end
-
-end
-
-function color_convert(c)
-    r = bit.rshift(c, 16)
-    g = bit.rshift(c - bit.lshift(r, 16), 8)
-    b = bit.rshift(c - bit.lshift(r, 16) - bit.lshift(g, 8), 0)
-    return r / 256, g / 256, b / 256
-end
-
---main draw function
--------------------------------------------------------------------------------
-function conky_main()
-    if conky_window == nil then
-        return
-    end
-    local cs = cairo_xlib_surface_create(conky_window.display,
-        conky_window.drawable, conky_window.visual, conky_window.height,
-        conky_window.width)
-    local cr = cairo_create(cs)
-
-    --Analog Clock
+function draw_a_clock(cr)
     s = tonumber(conky_parse("${time %S}"))
     m = tonumber(conky_parse("${time %M}"))
     h = tonumber(conky_parse("${time %H}"))
@@ -165,12 +128,139 @@ function conky_main()
             base.a_clock.h_length * math.sin(h / 60 * 2 * math.pi - math.pi / 2))
         cairo_stroke(cr)
     end
+end
 
+function draw_monitor_ring(cr, state, label, perc, func)
+    local r, g, b = color_convert(base.color.normal)
+    cairo_set_source_rgba(cr, r, g, b, 1)
+    if func(perc) then
+        local r, g, b = color_convert(base.color.danger)
+        cairo_set_source_rgba(cr, r, g, b, 1)
+    end
+    cairo_arc(cr, base.x + base.ring.x, base.y + base.ring.y,
+        base.ring.radius + (base.ring.interval * state.int_cnt), - math.pi/2,
+        - math.pi/2 + 2.7 * perc * (math.pi/180))
+    cairo_stroke(cr)
+
+    cairo_move_to(cr, base.x + base.ring.x - 40 * base.scale,
+        base.y + base.ring.y - (246 * base.scale + base.ring.interval * state.int_cnt))
+    cairo_select_font_face(cr, base.ring.font, CAIRO_FONT_SLANT_NORMAL,
+        CAIRO_FONT_WEIGHT_NORMAL);
+    cairo_set_font_size(cr, base.ring.font_size)
+    cairo_show_text(cr, label)
+    cairo_stroke(cr)
+    state.int_cnt = state.int_cnt + 1
+end
+
+-- draw_monitor_bar(cr, x, y, label, perc, is_red)
+-- cr: cairo context
+-- x: absolute x coordinate of bar
+-- y: absolute y coordinate of bar
+-- label: label of bar
+-- perc: percentage of bar
+-- is_red: function to determine if perc is in red zone
+function draw_monitor_bar(cr, x, y, label, perc, is_red)
+    set_rgb_hex(cr, base.color.normal)
+
+    cairo_move_to(cr, x, y + 8)
+    cairo_select_font_face(cr, base.monitor.bars.font, CAIRO_FONT_SLANT_NORMAL,
+        CAIRO_FONT_WEIGHT_NORMAL);
+    cairo_set_font_size(cr, base.monitor.bars.font_size)
+    cairo_show_text(cr, label)
+    cairo_stroke(cr)
+
+    if (is_red(perc)) then
+        set_rgb_hex(cr, base.color.danger_dark)
+    else
+        set_rgb_hex(cr, base.color.dark)
+    end
+    cairo_move_to(cr, x + 50, y)
+    cairo_set_line_width(cr, 10)
+    cairo_rel_line_to(cr, base.monitor.bars.line_len, 0)
+    cairo_stroke(cr)
+
+    if (is_red(perc)) then
+        set_rgb_hex(cr, base.color.danger)
+    else
+        set_rgb_hex(cr, base.color.normal)
+    end
+    cairo_move_to(cr, x + 50, y)
+    cairo_rel_line_to(cr, base.monitor.bars.line_len * perc / 100, 0)
+    cairo_stroke(cr)
+end
+
+function draw_monitor(cr)
+    draw_monitor_bar(cr,
+        base.monitor.bars.x + base.x,
+        base.monitor.bars.y + base.y,
+        "CPU",
+        50,
+        function (v)
+            return (v > 90)
+        end)
+    draw_monitor_bar(cr,
+        base.monitor.bars.x + base.x,
+        base.monitor.bars.y + base.y + 40,
+        "MEM",
+        90,
+        function (v)
+            return (v > 87.5)
+        end)
+end
+
+function inc_scroll_index()
+    base.mpd.scroll_index.title = base.mpd.scroll_index.title + 1
+    base.mpd.scroll_index.artist = base.mpd.scroll_index.artist + 1
+    base.mpd.scroll_index.album = base.mpd.scroll_index.album + 1
+
+    if base.mpd.scroll_index.title > conky_parse("${mpd_title}"):len() then
+        base.mpd.scroll_index.title = 0
+    end
+    if base.mpd.scroll_index.artist > conky_parse("${mpd_artist}"):len() then
+        base.mpd.scroll_index.artist = 0
+    end
+    if base.mpd.scroll_index.album > conky_parse("${mpd_album}"):len() then
+        base.mpd.scroll_index.album = 0
+    end
+
+end
+
+function color_convert(c)
+    r = bit.rshift(c, 16)
+    g = bit.rshift(c - bit.lshift(r, 16), 8)
+    b = bit.rshift(c - bit.lshift(r, 16) - bit.lshift(g, 8), 0)
+    return r / 256, g / 256, b / 256
+end
+
+function set_rgb_hex(cr, c)
+    local r, g, b = color_convert(c)
+    cairo_set_source_rgb(cr, r, g, b, 1)
+end
+
+--main draw function
+-------------------------------------------------------------------------------
+function conky_main()
+    if conky_window == nil then
+        return
+    end
+    local cs = cairo_xlib_surface_create(conky_window.display,
+        conky_window.drawable, conky_window.visual, conky_window.height,
+        conky_window.width)
+    local cr = cairo_create(cs)
+
+    --draw_origin(cr)
+
+    --Analog Clock
+    draw_a_clock(cr)
+
+    --Monitor
+    draw_monitor(cr)
 
     ----------------------------------------------------------------------------
 
 
     --System Monitor
+    --[[
     cairo_set_line_width(cr,5 * base.scale)
     local r, g, b = color_convert(base.color.normal)
     cairo_set_source_rgba(cr, r, g, b, 1)
@@ -296,6 +386,7 @@ function conky_main()
         cairo_stroke(cr)
 
     end
+    --]]
     ----------------------------------------------------------------------------
     cairo_destroy(cr)
     cairo_surface_destroy(cs)
