@@ -380,20 +380,23 @@ function draw_top(cr)
     cairo_set_font_size(cr, base.top.font_size)
 
 
-    cairo_move_to(cr, base.x + base.top.x, base.y + base.top.y)
+    cairo_move_to(cr, base.x + base.top.x + 26 * base.scale, base.y + base.top.y)
     cairo_show_text(cr, "PID")
     cairo_move_to(cr, base.x + base.top.x + 100 * base.scale, base.y + base.top.y)
     cairo_show_text(cr, "Process")
-    cairo_move_to(cr, base.x + base.top.x + 500 * base.scale, base.y + base.top.y)
-    cairo_show_text(cr, "CPU %")
+    cairo_move_to(cr, base.x + base.top.x + 542 * base.scale, base.y + base.top.y)
+    cairo_show_text(cr, "Load")
+    cairo_move_to(cr, base.x + base.top.x + 620 * base.scale, base.y + base.top.y)
+    cairo_show_text(cr, "Mem")
     for i = 1, 5 do
         cairo_move_to(cr, base.x + base.top.x, base.y + base.top.y + 30 * i * base.scale)
         cairo_show_text(cr, conky_parse(string.format("${top pid %d}", i)))
         cairo_move_to(cr, base.x + base.top.x + 100 * base.scale, base.y + base.top.y + 30 * i * base.scale)
         cairo_show_text(cr, conky_parse(string.format("${top name %d}", i)))
-        cairo_move_to(cr, base.x + base.top.x + 500 * base.scale, base.y + base.top.y + 30 * i * base.scale)
-        local cpu_perc = tonumber(conky_parse(string.format("${top cpu %d}", i))) * 100
-        cairo_show_text(cr, string.format("%d%%", cpu_perc))
+        cairo_move_to(cr, base.x + base.top.x + 514 * base.scale, base.y + base.top.y + 30 * i * base.scale)
+        cairo_show_text(cr, conky_parse(string.format("${top cpu %d}", i)))
+        cairo_move_to(cr, base.x + base.top.x + 620 * base.scale, base.y + base.top.y + 30 * i * base.scale)
+        cairo_show_text(cr, conky_parse(string.format("${top mem_res %d}", i)))
     end
 end
 
