@@ -23,6 +23,7 @@ base = {
     a_clock = {},
     monitor = {},
     mpd = {},
+    top = {},
 }
 
 base.ring = {
@@ -60,15 +61,6 @@ base.monitor = {
     font_size = 20 * base.scale,
 }
 
-base.monitor.bars = {
-    x = 50 * base.scale,
-    y = 400 * base.scale,
-    font = "M+ 1mn light",
-    font_size = 26 * base.scale,
-    line_len = 800 * base.scale,
-}
-
-
 base.mpd = {
     x = 68 * base.scale,
     y = 400 * base.scale,
@@ -79,6 +71,13 @@ base.mpd = {
         album = 0,
         title = 0,
     },
+}
+
+base.top = {
+    x = 1700 * base.scale,
+    y = 100 * base.scale,
+    font = "M+ 1mn light",
+    font_size = 26 * base.scale,
 }
 --------------------------------------------------------------------------------
 function draw_origin(cr)
@@ -296,17 +295,20 @@ function draw_monitor(cr)
 end
 
 function draw_mpd(cr)
-    function draw_mpd_bar(cr, x, y, w, l, perc)
-        set_rgb_hex(cr, base.color.dark)
-        cairo_move_to(cr, x, y)
-        cairo_set_line_width(cr, w)
-        cairo_rel_line_to(cr, l * base.scale, 0)
-        cairo_stroke(cr)
+    function inc_scroll_index()
+        base.mpd.scroll_index.title = base.mpd.scroll_index.title + 1
+        base.mpd.scroll_index.artist = base.mpd.scroll_index.artist + 1
+        base.mpd.scroll_index.album = base.mpd.scroll_index.album + 1
 
-        set_rgb_hex(cr, base.color.normal)
-        cairo_move_to(cr, x, y)
-        cairo_rel_line_to(cr, l * base.scale * perc / 100.0, 0)
-        cairo_stroke(cr)
+        if base.mpd.scroll_index.title > conky_parse("${mpd_title}"):len() then
+            base.mpd.scroll_index.title = 0
+        end
+        if base.mpd.scroll_index.artist > conky_parse("${mpd_artist}"):len() then
+            base.mpd.scroll_index.artist = 0
+        end
+        if base.mpd.scroll_index.album > conky_parse("${mpd_album}"):len() then
+            base.mpd.scroll_index.album = 0
+        end
     end
 
     cairo_select_font_face(cr, base.mpd.font, CAIRO_FONT_SLANT_NORMAL,
@@ -365,28 +367,34 @@ function draw_mpd(cr)
 
     else
         cairo_move_to(cr, base.x + base.mpd.x, base.y + base.mpd.y)
-        local r, g, b = color_convert(base.color.dark)
-        cairo_set_source_rgba(cr, r, g, b, 1)
+        set_rgb_hex(cr, base.color.dark)
         cairo_show_text(cr, "MPD: Not playing")
         cairo_stroke(cr)
     end
 end
 
-function inc_scroll_index()
-    base.mpd.scroll_index.title = base.mpd.scroll_index.title + 1
-    base.mpd.scroll_index.artist = base.mpd.scroll_index.artist + 1
-    base.mpd.scroll_index.album = base.mpd.scroll_index.album + 1
+function draw_top(cr)
+    set_rgb_hex(cr, base.color.normal)
+    cairo_select_font_face(cr, base.top.font, CAIRO_FONT_SLANT_NORMAL,
+        CAIRO_FONT_WEIGHT_NORMAL);
+    cairo_set_font_size(cr, base.top.font_size)
 
-    if base.mpd.scroll_index.title > conky_parse("${mpd_title}"):len() then
-        base.mpd.scroll_index.title = 0
-    end
-    if base.mpd.scroll_index.artist > conky_parse("${mpd_artist}"):len() then
-        base.mpd.scroll_index.artist = 0
-    end
-    if base.mpd.scroll_index.album > conky_parse("${mpd_album}"):len() then
-        base.mpd.scroll_index.album = 0
-    end
 
+    cairo_move_to(cr, base.x + base.top.x, base.y + base.top.y)
+    cairo_show_text(cr, "PID")
+    cairo_move_to(cr, base.x + base.top.x + 100 * base.scale, base.y + base.top.y)
+    cairo_show_text(cr, "Process")
+    cairo_move_to(cr, base.x + base.top.x + 500 * base.scale, base.y + base.top.y)
+    cairo_show_text(cr, "CPU %")
+    for i = 1, 5 do
+        cairo_move_to(cr, base.x + base.top.x, base.y + base.top.y + 30 * i * base.scale)
+        cairo_show_text(cr, conky_parse(string.format("${top pid %d}", i)))
+        cairo_move_to(cr, base.x + base.top.x + 100 * base.scale, base.y + base.top.y + 30 * i * base.scale)
+        cairo_show_text(cr, conky_parse(string.format("${top name %d}", i)))
+        cairo_move_to(cr, base.x + base.top.x + 500 * base.scale, base.y + base.top.y + 30 * i * base.scale)
+        local cpu_perc = tonumber(conky_parse(string.format("${top cpu %d}", i))) * 100
+        cairo_show_text(cr, string.format("%d%%", cpu_perc))
+    end
 end
 
 function color_convert(c)
@@ -425,6 +433,7 @@ function conky_main()
         conky_window.width)
     local cr = cairo_create(cs)
 
+    ----------------------------------------------------------------------------
     --draw_origin(cr)
 
     --Analog Clock
@@ -439,59 +448,9 @@ function conky_main()
     --MPD
     draw_mpd(cr)
 
-    ----------------------------------------------------------------------------
+    --top
+    draw_top(cr)
 
-
-    --System Monitor
-    --[[
-    cairo_set_line_width(cr,5 * base.scale)
-    local r, g, b = color_convert(base.color.normal)
-    cairo_set_source_rgba(cr, r, g, b, 1)
-
-    cpu_perc=tonumber(conky_parse("${cpu}"))
-    mem_perc=tonumber(conky_parse("${memperc}"))
-    bat_perc=tonumber(conky_parse("${battery_percent}"))
-    local ring_state = {
-        int_cnt = 0
-    }
-
-    --CPU
-    draw_monitor_ring(cr, ring_state, "CPU", cpu_perc, function(v)
-        return (v > 90)
-    end)
-    --Memory
-    draw_monitor_ring(cr, ring_state, "MEM", mem_perc, function(v)
-        return (v > 87.5)
-    end)
-    --Battery
-    -- If bat_perc is 0, system is dead or doesn't have a battery
-    if bat_perc > 0 then
-        draw_monitor_ring(cr, ring_state, "BAT", bat_perc, function(v)
-            return (v <= 20)
-        end)
-    end
-    ---------------------------------------------------------------------------
-
-    --Clock
-
-
-    --Monitor
-    local r, g, b = color_convert(base.color.normal)
-    cairo_set_source_rgba(cr, r, g, b, 1)
-    cairo_select_font_face(cr, base.monitor.font, CAIRO_FONT_SLANT_NORMAL,
-        CAIRO_FONT_WEIGHT_NORMAL);
-    cairo_set_font_size(cr, base.monitor.font_size)
-    cairo_move_to(cr, base.x + base.monitor.x , base.y + base.monitor.y)
-    cairo_show_text(cr, conky_parse("Read  ${diskio_read}"))
-    cairo_move_to(cr, base.x + base.monitor.x, base.y + base.monitor.y + 20 * base.scale)
-    cairo_show_text(cr, conky_parse("Write ${diskio_write}"))
-    cairo_move_to(cr, base.x + base.monitor.x + 160 * base.scale, base.y + base.monitor.y)
-    cairo_show_text(cr, conky_parse("Up    ${upspeed}"))
-    cairo_move_to(cr, base.x + base.monitor.x + 160 * base.scale, base.y + base.monitor.y + 20 * base.scale)
-    cairo_show_text(cr, conky_parse("Down  ${downspeed}"))
-
-    --MPD
-    --]]
     ----------------------------------------------------------------------------
     cairo_destroy(cr)
     cairo_surface_destroy(cs)
