@@ -5,9 +5,9 @@ require 'bit'
 --config
 -------------------------------------------------------------------------------
 base = { 
-    x = 440,
-    y = 10,
-    scale = 1,
+    x = 510,
+    y = 240,
+    scale = 1.5,
     color = {
         normal = 0x87afff,
         dark = 0x444494,
@@ -229,9 +229,9 @@ function conky_main()
     cairo_move_to(cr, base.x + base.monitor.x, base.y + base.monitor.y + 20 * base.scale)
     cairo_show_text(cr, conky_parse("Write ${diskio_write}"))
     cairo_move_to(cr, base.x + base.monitor.x + 160 * base.scale, base.y + base.monitor.y)
-    cairo_show_text(cr, conky_parse("Up    ${upspeed wlp7s0}"))
+    cairo_show_text(cr, conky_parse("Up    ${upspeed}"))
     cairo_move_to(cr, base.x + base.monitor.x + 160 * base.scale, base.y + base.monitor.y + 20 * base.scale)
-    cairo_show_text(cr, conky_parse("Down  ${downspeed wlp7s0}"))
+    cairo_show_text(cr, conky_parse("Down  ${downspeed}"))
 
     --MPD
     if conky_parse("${mpd_status}") == "Playing" then
