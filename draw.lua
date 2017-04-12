@@ -17,6 +17,7 @@ base = {
         danger = 0xff78af,
         danger_dark = 0x984768,
     },
+    bat_present = true,
     ring = {},
     clock = {},
     a_clock = {},
@@ -29,14 +30,14 @@ base.ring = {
     y = base.display_height / 2,
     font = "M+ 1mn light",
     font_size = 22 * base.scale,
-    radius = 700 * base.scale,
+    radius = 500 * base.scale,
     interval = 30 * base.scale,
 }
 
 base.a_clock = {
-    s_length = base.ring.radius * base.scale,
-    m_length = base.ring.radius * 0.8 * base.scale,
-    h_length = base.ring.radius * 0.5 * base.scale,
+    s_length = base.ring.radius * 0.95,
+    m_length = base.ring.radius * 0.8,
+    h_length = base.ring.radius * 0.5,
     s_width = 2,
     m_width = 3,
     h_width = 4,
@@ -69,10 +70,10 @@ base.monitor.bars = {
 
 
 base.mpd = {
-    x = 100 * base.scale,
-    y = 530 * base.scale,
+    x = 68 * base.scale,
+    y = 400 * base.scale,
     font = "M+ 1mn light",
-    font_size = 30 * base.scale,
+    font_size = 26 * base.scale,
     scroll_index = {
         artist = 0,
         album = 0,
@@ -150,18 +151,38 @@ function draw_clock(cr)
     cairo_stroke(cr)
 end
 
-function draw_monitor_ring(cr, state, label, perc, func)
-    local r, g, b = color_convert(base.color.normal)
-    cairo_set_source_rgba(cr, r, g, b, 1)
-    if func(perc) then
-        local r, g, b = color_convert(base.color.danger)
-        cairo_set_source_rgba(cr, r, g, b, 1)
+-- draw_monitor_ring(cr, x, y, r, rad_start, rad_end, label, perc, is_red)
+-- cr: cairo context
+-- x: absolute x coordinate of center
+-- y: absolute y coordinate of center
+-- r: radius of arc
+-- rad_start: starting angle of arc in radians
+-- rad_end: ending angle of arc in radians
+-- label: label of bar
+-- perc: percentage of bar
+-- is_red: function to determine if perc is in red zone
+function draw_monitor_ring(cr, x, y, r, rad_start, rad_end, label, perc, is_red, allow_zero)
+    if perc == 0 and not allow_zero then
+        return 0
+end
+    if is_red(perc) then
+        set_rgb_hex(cr, base.color.danger_dark)
+    else
+        set_rgb_hex(cr, base.color.dark)
     end
-    cairo_arc(cr, base.x + base.ring.x, base.y + base.ring.y,
-        base.ring.radius + (base.ring.interval * state.int_cnt), - math.pi/2,
-        - math.pi/2 + 2.7 * perc * (math.pi/180))
+    cairo_arc(cr, x, y, r, rad_start, rad_end)
     cairo_stroke(cr)
 
+    if is_red(perc) then
+        set_rgb_hex(cr, base.color.danger)
+    else
+        set_rgb_hex(cr, base.color.normal)
+    end
+    local rad_fill = (rad_end - rad_start) * (perc / 100) + rad_start
+    cairo_arc(cr, x, y, r, rad_start, rad_fill)
+    cairo_stroke(cr)
+
+    --[[
     cairo_move_to(cr, base.x + base.ring.x - 40 * base.scale,
         base.y + base.ring.y - (246 * base.scale + base.ring.interval * state.int_cnt))
     cairo_select_font_face(cr, base.ring.font, CAIRO_FONT_SLANT_NORMAL,
@@ -170,6 +191,7 @@ function draw_monitor_ring(cr, state, label, perc, func)
     cairo_show_text(cr, label)
     cairo_stroke(cr)
     state.int_cnt = state.int_cnt + 1
+    --]]
 end
 
 -- draw_monitor_bar(cr, x, y, label, perc, is_red)
@@ -213,6 +235,7 @@ function draw_monitor(cr)
     cpu_perc=tonumber(conky_parse("${cpu}"))
     mem_perc=tonumber(conky_parse("${memperc}"))
     bat_perc=tonumber(conky_parse("${battery_percent}"))
+    --[[
     draw_monitor_bar(cr,
         base.monitor.bars.x + base.x,
         base.monitor.bars.y + base.y,
@@ -229,32 +252,66 @@ function draw_monitor(cr)
         function (v)
             return (v > 87.5)
         end)
-    draw_monitor_bar(cr,
-        base.monitor.bars.x + base.x,
-        base.monitor.bars.y + base.y + 80 * base.scale,
+    if (bat_perc > 0) then
+        draw_monitor_bar(cr,
+            base.monitor.bars.x + base.x,
+            base.monitor.bars.y + base.y + 80 * base.scale,
+            "BAT",
+            bat_perc,
+            function (v)
+                return (v <= 20)
+            end)
+    end
+    --]]
+    draw_monitor_ring(cr,
+        base.x + base.ring.x,
+        base.y + base.ring.y,
+        base.ring.radius + 20 * base.scale,
+        math.pi * 4 / 8,
+        math.pi * 12 / 8,
+        "CPU",
+        cpu_perc,
+        function (v) return (v > 90) end,
+        true)
+    draw_monitor_ring(cr,
+        base.x + base.ring.x,
+        base.y + base.ring.y,
+        base.ring.radius + 40 * base.scale,
+        math.pi * 3 / 8,
+        math.pi * 11 / 8,
+        "MEM",
+        mem_perc,
+        function (v) return (v > 87.5) end,
+        true)
+    draw_monitor_ring(cr,
+        base.x + base.ring.x,
+        base.y + base.ring.y,
+        base.ring.radius + 60 * base.scale,
+                math.pi * 2 / 8,
+        math.pi * 10 / 8,
         "BAT",
         bat_perc,
-        function (v)
-            return (v <= 20)
-        end)
+        function (v) return (v <= 20) end,
+        false)
 end
 
 function draw_mpd(cr)
     function draw_mpd_bar(cr, x, y, w, l, perc)
-        local r, g, b = color_convert(base.color.dark)
-        cairo_set_source_rgba(cr, r, g, b, 1)
+        set_rgb_hex(cr, base.color.dark)
         cairo_move_to(cr, x, y)
         cairo_set_line_width(cr, w)
         cairo_rel_line_to(cr, l * base.scale, 0)
         cairo_stroke(cr)
 
-        local r, g, b = color_convert(base.color.normal)
-        cairo_set_source_rgba(cr, r, g, b, 1)
+        set_rgb_hex(cr, base.color.normal)
         cairo_move_to(cr, x, y)
         cairo_rel_line_to(cr, l * base.scale * perc / 100.0, 0)
         cairo_stroke(cr)
     end
 
+    cairo_select_font_face(cr, base.mpd.font, CAIRO_FONT_SLANT_NORMAL,
+        CAIRO_FONT_WEIGHT_NORMAL);
+    cairo_set_font_size(cr, base.mpd.font_size)
     if conky_parse("${mpd_status}") == "Playing" then
         cairo_move_to(cr, base.x + base.mpd.x, base.y + base.mpd.y)
 
@@ -294,13 +351,18 @@ function draw_mpd(cr)
         end
         cairo_show_text(cr, title)
         inc_scroll_index() 
+        cairo_stroke(cr)
 
-        draw_mpd_bar(cr,
-            base.x + base.mpd.x,
-            base.y + base.mpd.y + 80 * base.scale,
-            10 * base.scale,
-            800 * base.scale,
-            tonumber(conky_parse("${mpd_percent}")))
+        draw_monitor_ring(cr,
+            base.x + base.ring.x,
+            base.y + base.ring.y,
+            base.ring.radius,
+            math.pi * 5 / 8,
+            math.pi * 13 / 8, "MPD",
+            tonumber(conky_parse("${mpd_percent}")),
+            function (v) return (false) end,
+            true)
+
     else
         cairo_move_to(cr, base.x + base.mpd.x, base.y + base.mpd.y)
         local r, g, b = color_convert(base.color.dark)
