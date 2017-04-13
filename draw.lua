@@ -30,7 +30,7 @@ base.ring = {
     x = base.display_width / 2,
     y = base.display_height / 2,
     font = "M+ 1mn light",
-    font_size = 22 * base.scale,
+    font_size = 26 * base.scale,
     radius = 500 * base.scale,
     interval = 30 * base.scale,
 }
@@ -161,36 +161,41 @@ end
 -- perc: percentage of bar
 -- is_red: function to determine if perc is in red zone
 function draw_monitor_ring(cr, x, y, r, rad_start, rad_end, label, perc, is_red, allow_zero)
+    function set_bg()
+        if is_red(perc) then
+            set_rgb_hex(cr, base.color.danger_dark)
+        else
+            set_rgb_hex(cr, base.color.dark)
+        end
+    end
+
+    function set_fg()
+        if is_red(perc) then
+            set_rgb_hex(cr, base.color.danger)
+        else
+            set_rgb_hex(cr, base.color.normal)
+        end
+    end
+
     if perc == 0 and not allow_zero then
         return 0
-end
-    if is_red(perc) then
-        set_rgb_hex(cr, base.color.danger_dark)
-    else
-        set_rgb_hex(cr, base.color.dark)
     end
+    set_bg()
     cairo_arc(cr, x, y, r, rad_start, rad_end)
     cairo_stroke(cr)
 
-    if is_red(perc) then
-        set_rgb_hex(cr, base.color.danger)
-    else
-        set_rgb_hex(cr, base.color.normal)
-    end
+    set_fg()
     local rad_fill = (rad_end - rad_start) * (perc / 100) + rad_start
     cairo_arc(cr, x, y, r, rad_start, rad_fill)
     cairo_stroke(cr)
 
-    --[[
-    cairo_move_to(cr, base.x + base.ring.x - 40 * base.scale,
-        base.y + base.ring.y - (246 * base.scale + base.ring.interval * state.int_cnt))
     cairo_select_font_face(cr, base.ring.font, CAIRO_FONT_SLANT_NORMAL,
         CAIRO_FONT_WEIGHT_NORMAL);
     cairo_set_font_size(cr, base.ring.font_size)
+    cairo_move_to(cr, x + math.cos(rad_start) * r, y + math.sin(rad_start) * r - 14 * base.scale)
     cairo_show_text(cr, label)
     cairo_stroke(cr)
-    state.int_cnt = state.int_cnt + 1
-    --]]
+
 end
 
 -- draw_monitor_bar(cr, x, y, label, perc, is_red)
@@ -234,34 +239,6 @@ function draw_monitor(cr)
     cpu_perc=tonumber(conky_parse("${cpu}"))
     mem_perc=tonumber(conky_parse("${memperc}"))
     bat_perc=tonumber(conky_parse("${battery_percent}"))
-    --[[
-    draw_monitor_bar(cr,
-        base.monitor.bars.x + base.x,
-        base.monitor.bars.y + base.y,
-        "CPU",
-        cpu_perc,
-        function (v)
-            return (v > 90)
-        end)
-    draw_monitor_bar(cr,
-        base.monitor.bars.x + base.x,
-        base.monitor.bars.y + base.y + 40 * base.scale,
-        "MEM",
-        mem_perc,
-        function (v)
-            return (v > 87.5)
-        end)
-    if (bat_perc > 0) then
-        draw_monitor_bar(cr,
-            base.monitor.bars.x + base.x,
-            base.monitor.bars.y + base.y + 80 * base.scale,
-            "BAT",
-            bat_perc,
-            function (v)
-                return (v <= 20)
-            end)
-    end
-    --]]
     draw_monitor_ring(cr,
         base.x + base.ring.x,
         base.y + base.ring.y,
