@@ -33,15 +33,16 @@ base.ring = {
     font_size = 26 * base.scale,
     radius = 500 * base.scale,
     interval = 30 * base.scale,
+    width = 4 * base.scale,
 }
 
 base.a_clock = {
     s_length = base.ring.radius * 0.95,
     m_length = base.ring.radius * 0.8,
     h_length = base.ring.radius * 0.5,
-    s_width = 2,
-    m_width = 3,
-    h_width = 4,
+    s_width = 2 * base.scale,
+    m_width = 3 * base.scale,
+    h_width = 4 * base.scale,
     fluid = true,
 }
 
@@ -92,7 +93,7 @@ function draw_a_clock(cr)
     s = tonumber(conky_parse("${time %S}"))
     m = tonumber(conky_parse("${time %M}"))
     h = tonumber(conky_parse("${time %H}")) % 12
-    cairo_set_line_width(cr,base.a_clock.s_width)
+    cairo_set_line_width(cr, base.a_clock.s_width)
     local r, g, b = color_convert(base.color.dark)
     cairo_set_source_rgba(cr, r, g, b, 1)
     if base.a_clock.fluid then
@@ -181,6 +182,7 @@ function draw_monitor_ring(cr, x, y, r, rad_start, rad_end, label, perc, is_red,
         return 0
     end
     set_bg()
+    cairo_set_line_width(cr, base.ring.width)
     cairo_arc(cr, x, y, r, rad_start, rad_end)
     cairo_stroke(cr)
 
