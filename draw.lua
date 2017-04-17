@@ -353,30 +353,60 @@ function draw_mpd(cr)
 end
 
 function draw_top(cr)
+    function draw_top_five(cr, top_cmd, x, y)
+        for i = 1, 5 do
+            cairo_move_to(cr, x, y + 30 * i * base.scale)
+            cairo_show_text(cr, conky_parse(string.format("${".. top_cmd .. " pid %d}", i)))
+            cairo_move_to(cr, x + 100 * base.scale, y + 30 * i * base.scale)
+            cairo_show_text(cr, conky_parse(string.format("${".. top_cmd .. " name %d}", i)))
+            cairo_move_to(cr, x + 514 * base.scale, y + 30 * i * base.scale)
+            cairo_show_text(cr, conky_parse(string.format("${".. top_cmd .. " cpu %d}", i)))
+            cairo_move_to(cr, x + 620 * base.scale, y + 30 * i * base.scale)
+            cairo_show_text(cr, conky_parse(string.format("${".. top_cmd .. " mem_res %d}", i)))
+        end
+    end
     set_rgb_hex(cr, base.color.normal)
     cairo_select_font_face(cr, base.top.font, CAIRO_FONT_SLANT_NORMAL,
         CAIRO_FONT_WEIGHT_NORMAL);
+
+    local top_x = base.x + base.top.x
+    local top_y = base.y + base.top.y
+    local top_y_table = top_y + 40 * base.scale
+
+    cairo_set_font_size(cr, base.top.font_size * 1.5)
+    cairo_move_to(cr, top_x, top_y)
+    cairo_show_text(cr, "top cpu")
+
     cairo_set_font_size(cr, base.top.font_size)
-
-
-    cairo_move_to(cr, base.x + base.top.x + 26 * base.scale, base.y + base.top.y)
+    cairo_move_to(cr, top_x + 26 * base.scale, top_y_table)
     cairo_show_text(cr, "PID")
-    cairo_move_to(cr, base.x + base.top.x + 100 * base.scale, base.y + base.top.y)
+    cairo_move_to(cr, top_x + 100 * base.scale, top_y_table)
     cairo_show_text(cr, "Process")
-    cairo_move_to(cr, base.x + base.top.x + 554 * base.scale, base.y + base.top.y)
+    cairo_move_to(cr, top_x + 554 * base.scale, top_y_table)
     cairo_show_text(cr, "CPU")
-    cairo_move_to(cr, base.x + base.top.x + 620 * base.scale, base.y + base.top.y)
+    cairo_move_to(cr, top_x + 620 * base.scale, top_y_table)
     cairo_show_text(cr, "Mem")
-    for i = 1, 5 do
-        cairo_move_to(cr, base.x + base.top.x, base.y + base.top.y + 30 * i * base.scale)
-        cairo_show_text(cr, conky_parse(string.format("${top pid %d}", i)))
-        cairo_move_to(cr, base.x + base.top.x + 100 * base.scale, base.y + base.top.y + 30 * i * base.scale)
-        cairo_show_text(cr, conky_parse(string.format("${top name %d}", i)))
-        cairo_move_to(cr, base.x + base.top.x + 514 * base.scale, base.y + base.top.y + 30 * i * base.scale)
-        cairo_show_text(cr, conky_parse(string.format("${top cpu %d}", i)))
-        cairo_move_to(cr, base.x + base.top.x + 620 * base.scale, base.y + base.top.y + 30 * i * base.scale)
-        cairo_show_text(cr, conky_parse(string.format("${top mem_res %d}", i)))
-    end
+
+    draw_top_five(cr, "top", top_x, top_y_table)
+
+    top_y = top_y + 250 * base.scale
+    top_y_table = top_y + 40 * base.scale
+
+    cairo_set_font_size(cr, base.top.font_size * 1.5)
+    cairo_move_to(cr, top_x, top_y)
+    cairo_show_text(cr, "top mem")
+
+    cairo_set_font_size(cr, base.top.font_size)
+    cairo_move_to(cr, top_x + 26 * base.scale, top_y_table)
+    cairo_show_text(cr, "PID")
+    cairo_move_to(cr, top_x + 100 * base.scale, top_y_table)
+    cairo_show_text(cr, "Process")
+    cairo_move_to(cr, top_x + 554 * base.scale, top_y_table)
+    cairo_show_text(cr, "CPU")
+    cairo_move_to(cr, top_x + 620 * base.scale, top_y_table)
+    cairo_show_text(cr, "Mem")
+
+    draw_top_five(cr, "top_mem", top_x, top_y_table)
 end
 
 function color_convert(c)
