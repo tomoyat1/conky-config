@@ -91,12 +91,15 @@ function draw_origin(cr)
 end
 
 function draw_a_clock(cr)
+    set_rgba_hex(cr, base.color.background)
+    cairo_arc (cr, base.x + base.ring.x, base.y + base.ring.y, base.ring.radius + 100 * base.scale, 0, 2 * math.pi)
+    cairo_fill(cr)
+
     s = tonumber(conky_parse("${time %S}"))
     m = tonumber(conky_parse("${time %M}"))
     h = tonumber(conky_parse("${time %H}")) % 12
     cairo_set_line_width(cr, base.a_clock.s_width)
-    local r, g, b = color_convert(base.color.dark)
-    cairo_set_source_rgba(cr, r, g, b, 1)
+    set_rgb_hex(cr, base.color.dark)
     if base.a_clock.fluid then
         cairo_move_to(cr, base.x + base.ring.x, base.y + base.ring.y)
         cairo_rel_line_to(cr, base.a_clock.s_length * math.cos(s / 60 * 2 * math.pi - math.pi / 2),
