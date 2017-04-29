@@ -16,6 +16,7 @@ base = {
         dark = 0x444494,
         danger = 0xff78af,
         danger_dark = 0x984768,
+        background = 0x333333dd,
     },
     bat_present = true,
     ring = {},
@@ -48,7 +49,7 @@ base.a_clock = {
 
 base.clock = {
     x = 50 * base.scale,
-    y = 150 * base.scale,
+    y = 100 * base.scale,
     time_font = "M+ 1mn thin",
     date_font = "M+ 1mn thin",
     time_font_size = 200 * base.scale,
@@ -133,11 +134,16 @@ function draw_a_clock(cr)
 end
 
 function draw_clock(cr)
-    local r, g, b = color_convert(base.color.normal)
-    cairo_set_source_rgba(cr, r, g, b, 1)
+    set_rgba_hex(cr, base.color.background)
+    cairo_rectangle(cr, base.x + base.clock.x, base.y + base.clock.y, 500 * base.scale, 240 * base.scale)
+    cairo_fill(cr)
+    --cairo_stroke(cr)
+
+    set_rgb_hex(cr, base.color.normal)
     cairo_select_font_face(cr, base.clock.date_font, CAIRO_FONT_SLANT_NORMAL,
         CAIRO_FONT_WEIGHT_NORMAL);
-    cairo_move_to(cr, base.x + base.clock.x + 235 * base.scale, base.y + base.clock.y);
+
+    cairo_move_to(cr, base.x + base.clock.x + 235 * base.scale, base.y + base.clock.y + 50 * base.scale);
     cairo_set_font_size(cr, base.clock.date_font_size)
     cairo_show_text(cr, conky_parse("${time %a %b %d}"));
     cairo_stroke(cr)
@@ -145,7 +151,7 @@ function draw_clock(cr)
     cairo_select_font_face(cr, base.clock.time_font, CAIRO_FONT_SLANT_NORMAL,
         CAIRO_FONT_WEIGHT_NORMAL);
     cairo_move_to(cr, base.x + base.clock.x,
-        base.y + base.clock.y + 175 * base.scale)
+        base.y + base.clock.y + 225 * base.scale)
     cairo_set_font_size(cr, base.clock.time_font_size)
     cairo_show_text(cr, conky_parse("${time %H:%M}"));
     cairo_stroke(cr)
@@ -421,7 +427,7 @@ function color_convert_a(c)
     local g = bit.rshift(c - bit.lshift(r, 24), 16)
     local b = bit.rshift(c - bit.lshift(r, 24) - bit.lshift(g, 16), 8)
     local a = bit.rshift(c - bit.lshift(r, 24) - bit.lshift(g, 16) - bit.lshift(b, 8), 0)
-    return r / 256, g / 256, b / 256
+    return r / 256, g / 256, b / 256, a / 256
 end
 
 function set_rgb_hex(cr, c)
