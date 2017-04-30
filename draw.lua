@@ -16,7 +16,7 @@ base = {
         dark = 0x444494,
         danger = 0xff78af,
         danger_dark = 0x984768,
-        background = 0x333333dd,
+        background = 0x111111aa,
     },
     bat_present = true,
     ring = {},
@@ -92,7 +92,7 @@ end
 
 function draw_a_clock(cr)
     set_rgba_hex(cr, base.color.background)
-    cairo_arc (cr, base.x + base.ring.x, base.y + base.ring.y, base.ring.radius + 100 * base.scale, 0, 2 * math.pi)
+    cairo_arc (cr, base.x + base.ring.x, base.y + base.ring.y, base.ring.radius + 80 * base.scale, 0, 2 * math.pi)
     cairo_fill(cr)
 
     s = tonumber(conky_parse("${time %S}"))
